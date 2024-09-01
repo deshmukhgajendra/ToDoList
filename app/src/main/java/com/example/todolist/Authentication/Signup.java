@@ -1,5 +1,7 @@
 package com.example.todolist.Authentication;
 
+import static android.service.controls.ControlsProviderService.TAG;
+
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -10,6 +12,7 @@ import android.util.Log;
 import android.util.Patterns;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
@@ -52,6 +55,17 @@ public class Signup extends AppCompatActivity {
     private static final int RC_SIGN_IN = 9001;
     String verificationId;
 
+    public void onStart(){
+        super.onStart();
+
+        FirebaseUser currentUser=mAuth.getCurrentUser();
+        if (currentUser != null){
+            Intent i = new Intent(Signup.this, MainActivity.class);
+            startActivity(i);
+            finish();
+        }
+    }
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,39 +88,53 @@ public class Signup extends AppCompatActivity {
         loginIntentButton = findViewById(R.id.loginIntentButton);
         mAuth = FirebaseAuth.getInstance();
 
-
-        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestIdToken(getString(R.string.default_web_client_id))
-                .requestEmail()
-                .build();
-        mGoogleSignInCLient = GoogleSignIn.getClient(this, gso);
-
-        googleSignUpButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                signIn();
-            }
+        loginIntentButton.setOnClickListener(view -> {
+            Intent i = new Intent(Signup.this, Login.class);
+            startActivity(i);
         });
 
-        signUpButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                signupUserByEmailAndPassword();
+        googleSignUpButton.setOnClickListener(view -> signIn());
+
+        signUpButton.setOnClickListener(view -> signupUserByEmailAndPassword());
+
+        mobileSignUpButton.setOnClickListener(view -> {
+            String phoneNumber = "+91" + mobilenoEditText.getText().toString().trim();
+
+            if (phoneNumber.isEmpty()) {
+                mobilenoEditText.setError("Phone number is required!");
+                mobilenoEditText.requestFocus();
+                return;
             }
-        });
 
-        mobileSignUpButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                String phoneNumber = mobilenoEditText.getText().toString().trim();
+            sendVerificationCode(phoneNumber);
 
-                if (phoneNumber.isEmpty()) {
-                    mobilenoEditText.setError("phone number is required !");
-                    mobilenoEditText.requestFocus();
-                    return;
+            // Inflate OTP layout and set it to the content view
+            LayoutInflater inflater = getLayoutInflater();
+            View otpView = inflater.inflate(R.layout.otpvarification, null);
+            setContentView(otpView);
+
+            EditText[] otpDigits = {
+                    otpView.findViewById(R.id.otpDigit1),
+                    otpView.findViewById(R.id.otpDigit2),
+                    otpView.findViewById(R.id.otpDigit3),
+                    otpView.findViewById(R.id.otpDigit4),
+                    otpView.findViewById(R.id.otpDigit5),
+                    otpView.findViewById(R.id.otpDigit6)
+            };
+            setupOtpInputs(otpDigits);
+
+            Button verifyButton = otpView.findViewById(R.id.verifyButton);
+            verifyButton.setOnClickListener(view1 -> {
+                StringBuilder otpCode = new StringBuilder();
+                for (EditText otpDigit : otpDigits) {
+                    otpCode.append(otpDigit.getText().toString().trim());
                 }
-                sendVerificationCode(phoneNumber);
-            }
+                if (otpCode.length() == 6) {
+                    verifycode(otpCode.toString());
+                } else {
+                    Toast.makeText(Signup.this, "Enter valid OTP", Toast.LENGTH_LONG).show();
+                }
+            });
         });
     }
 
@@ -220,7 +248,8 @@ public class Signup extends AppCompatActivity {
 
         @Override
         public void onVerificationFailed(@NonNull FirebaseException e) {
-            Toast.makeText(Signup.this, e.getMessage(), Toast.LENGTH_LONG).show();
+            Toast.makeText(Signup.this,"hii gajendra"+ e.getMessage(), Toast.LENGTH_LONG).show();
+            Log.i(TAG, "onVerificationFailed: "+e.getMessage());
         }
 
         public void onCodeSent(String s, PhoneAuthProvider.ForceResendingToken token) {
@@ -248,22 +277,16 @@ public class Signup extends AppCompatActivity {
 
     }
     private void verifycode(String code){
+
+        Toast.makeText(Signup.this,"verifycode method calls ",Toast.LENGTH_LONG).show();
         PhoneAuthCredential credential= PhoneAuthProvider.getCredential(verificationId,code);
         signInWithPhoneAuthCredential(credential);
+
+        Intent i = new Intent(Signup.this, MainActivity.class);
+        startActivity(i);
     }
 
-    private void setupOtpInputs() {
-        LayoutInflater inflater = getLayoutInflater();
-        View view = inflater.inflate(R.layout.otpvarification, null);
-
-        EditText[] otpDigits = {
-                view.findViewById(R.id.otpDigit1),
-                view.findViewById(R.id.otpDigit2),
-                view.findViewById(R.id.otpDigit3),
-                view.findViewById(R.id.otpDigit4),
-                view.findViewById(R.id.otpDigit5),
-                view.findViewById(R.id.otpDigit6)
-        };
+    private void setupOtpInputs(EditText[] otpDigits) {
 
         for (int i = 0; i <otpDigits.length;i++){
             int index =i;
