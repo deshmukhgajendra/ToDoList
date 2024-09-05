@@ -55,7 +55,7 @@
                 android:layout_marginBottom="16dp"/>
 
             <Button
-                android:id="@+id/button2"
+                android:id="@+id/plannedButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:backgroundTint="@color/black"
@@ -68,7 +68,7 @@
                 android:layout_marginBottom="16dp"/>
 
             <Button
-                android:id="@+id/button3"
+                android:id="@+id/tasksButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:backgroundTint="@color/black"
