@@ -31,7 +31,7 @@ import java.util.List;
 public class MyDay extends AppCompatActivity {
 
     FloatingActionButton fab;
-    public String task;
+    public String myDayTask;
     Database dbHelper;
     private List<model> taskList;
     mydayRecyclerAdapter adapter;
@@ -79,14 +79,15 @@ public class MyDay extends AppCompatActivity {
                 // Create and show the BottomSheetDialog
                 BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(MyDay.this);
                 bottomSheetDialog.setContentView(bottomSheetView);
+
                 bottomSheetDialog.show();
 
                 // Set the onClickListener for the add button
                 addButton.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        task = taskEditText.getText().toString();
-                        insertTask(task);
+                        myDayTask = taskEditText.getText().toString();
+                        insertTask(myDayTask);
                         bottomSheetDialog.dismiss();
                         fetchData();
                         adapter.notifyDataSetChanged();

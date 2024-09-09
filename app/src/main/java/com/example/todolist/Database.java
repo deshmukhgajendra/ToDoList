@@ -12,7 +12,8 @@ public class Database extends SQLiteOpenHelper {
 
     public static int version = 1;
     public static String db_name="db";
-    public static String table_name="task_table";
+    public static String table_name="myday_table";
+    public static String task_table="task_table";
     public static String column_id="id";
     public static String column_task="task";
 
@@ -42,5 +43,14 @@ public class Database extends SQLiteOpenHelper {
     public Cursor getAllTask(){
         SQLiteDatabase db = this.getReadableDatabase();
          return db.rawQuery("SELECT * FROM "+ table_name,null);
+    }
+
+    public void create_table(){
+        SQLiteDatabase sqLiteDatabase=getWritableDatabase();
+        String query = "CREATE TABLE IF NOT EXISTS "+ task_table + "("
+                 + column_id + "INTEGER PRIMARY KEY AUTOINCREMENT, "
+                + column_task + "TEXT)";
+         sqLiteDatabase.execSQL(query);
+
     }
 }

@@ -20,7 +20,7 @@ public class mydayRecyclerAdapter extends RecyclerView.Adapter<mydayRecyclerAdap
     Context context;
     Database dbHelper;
 
-    mydayRecyclerAdapter(List<model> taskList, Context context){
+    public mydayRecyclerAdapter(List<model> taskList, Context context){
 
         this.taskList=taskList;
         this.context=context;
