@@ -19,8 +19,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.todolist.Database;
 import com.example.todolist.R;
-import com.example.todolist.model;
-import com.example.todolist.mydayRecyclerAdapter;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.radiobutton.MaterialRadioButton;
@@ -101,7 +99,7 @@ public class MyDay extends AppCompatActivity {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         ContentValues values= new ContentValues();
         values.put("task",task);
-        db.insert("task_table",null,values);
+        db.insert("myday_table",null,values);
     }
 
     public void fetchData(){

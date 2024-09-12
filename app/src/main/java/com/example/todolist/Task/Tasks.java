@@ -1,7 +1,7 @@
 package com.example.todolist.Task;
 
 import android.content.ContentValues;
-import android.content.Context;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -14,19 +14,28 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.todolist.Database;
 import com.example.todolist.R;
-import com.example.todolist.mydayRecyclerAdapter;
+import com.example.todolist.MyDay.model;
+import com.example.todolist.MyDay.mydayRecyclerAdapter;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.radiobutton.MaterialRadioButton;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Tasks extends AppCompatActivity {
     FloatingActionButton fab;
     Database dbHelper;
-    mydayRecyclerAdapter adapter;
+    taskRecyclerAdapter adapter;
     String task;
+    RecyclerView recyclerView;
+    List<taskModel>tasklist= new ArrayList<>();
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,7 +49,12 @@ public class Tasks extends AppCompatActivity {
         });
 
         fab=findViewById(R.id.fab);
-
+        recyclerView=findViewById(R.id.recyclerView);
+        adapter= new taskRecyclerAdapter(tasklist,this);
+        recyclerView.setAdapter(adapter);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        dbHelper= new Database(this);
+        fetchData();
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -59,7 +73,10 @@ public class Tasks extends AppCompatActivity {
                     @Override
                     public void onClick(View view) {
                         task=editText.getText().toString().trim();
+                        insertData(task);
                         bottomSheetDialog.dismiss();
+                        fetchData();
+                        adapter.notifyDataSetChanged();
                     }
                 });
             }
@@ -68,9 +85,25 @@ public class Tasks extends AppCompatActivity {
 
     }
 
-    public void insertData(){
+    public void insertData(String task){
         SQLiteDatabase sqLiteDatabase=dbHelper.getWritableDatabase();
         ContentValues values= new ContentValues();
-        //values
+        values.put("task",task);
+        sqLiteDatabase.insert("task_table",null,values);
+    }
+    public void fetchData(){
+        tasklist.clear();
+
+        Cursor cursor = dbHelper.getAllmydayTask();
+        if (cursor.moveToFirst()){
+            do {
+                String taskname =cursor.getString(cursor.getColumnIndex(Database.column_task));
+                tasklist.add(new taskModel(taskname));
+            }while (cursor.moveToNext());
+
+
+        }cursor.close();
+
+        adapter.notifyDataSetChanged();
     }
 }

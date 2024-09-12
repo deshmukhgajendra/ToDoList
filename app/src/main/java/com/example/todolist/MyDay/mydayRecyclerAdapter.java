@@ -1,4 +1,4 @@
-package com.example.todolist;
+package com.example.todolist.MyDay;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
@@ -10,6 +10,9 @@ import android.widget.RadioButton;
 import androidx.annotation.NonNull;
 import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.example.todolist.Database;
+import com.example.todolist.R;
 
 import java.util.List;
 
@@ -78,7 +81,7 @@ public class mydayRecyclerAdapter extends RecyclerView.Adapter<mydayRecyclerAdap
     }
     private void deleteTask(String taskName){
         SQLiteDatabase db =dbHelper.getWritableDatabase();
-        db.delete("task_table","task = ?", new String[]{taskName});
+        db.delete("myday_table","task = ?", new String[]{taskName});
         db.close();
     }
 }

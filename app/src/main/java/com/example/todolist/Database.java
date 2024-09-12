@@ -1,6 +1,5 @@
 package com.example.todolist;
 
-
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -10,47 +9,53 @@ import androidx.annotation.Nullable;
 
 public class Database extends SQLiteOpenHelper {
 
-    public static int version = 1;
-    public static String db_name="db";
-    public static String table_name="myday_table";
-    public static String task_table="task_table";
-    public static String column_id="id";
-    public static String column_task="task";
-
-
-    String query = "CREATE TABLE IF NOT EXISTS " + table_name + " ("
-            + column_id + " INTEGER PRIMARY KEY AUTOINCREMENT, "
-            + column_task + " TEXT)";
-
+    public static int version = 2;
+    public static String db_name = "db";
+    public static String myday_table = "myday_table";  // Table for "My Day" tasks
+    public static String task_table = "task_table";   // Table for general tasks
+    public static String column_id = "id";
+    public static String column_task = "task";
 
     public Database(@Nullable Context context) {
-        super(context,db_name,null,version);
+        super(context, db_name, null, version);
     }
 
     @Override
     public void onCreate(SQLiteDatabase sqLiteDatabase) {
-
-        sqLiteDatabase.execSQL(query);
+        create_myDay_table(sqLiteDatabase);   // Create "myday_table"
+        create_task_table(sqLiteDatabase);    // Create "task_table"
     }
 
     @Override
-    public void onUpgrade(SQLiteDatabase sqLiteDatabase, int i, int i1) {
-
-        sqLiteDatabase.execSQL("DROP TABLE IF EXISTS "+ table_name);
+    public void onUpgrade(SQLiteDatabase sqLiteDatabase, int oldVersion, int newVersion) {
+        // Drop older tables if they exist and recreate them
+        sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + myday_table);
+        sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + task_table);
         onCreate(sqLiteDatabase);
     }
 
-    public Cursor getAllTask(){
+    public Cursor getAllmydayTask() {
         SQLiteDatabase db = this.getReadableDatabase();
-         return db.rawQuery("SELECT * FROM "+ table_name,null);
+        return db.rawQuery("SELECT * FROM " + task_table, null);  // Select from the correct table
+    }
+    public Cursor getAllTask(){
+        SQLiteDatabase db = this .getReadableDatabase();
+        return db.rawQuery("SELECT * FROM "+ myday_table,null);
     }
 
-    public void create_table(){
-        SQLiteDatabase sqLiteDatabase=getWritableDatabase();
-        String query = "CREATE TABLE IF NOT EXISTS "+ task_table + "("
-                 + column_id + "INTEGER PRIMARY KEY AUTOINCREMENT, "
-                + column_task + "TEXT)";
-         sqLiteDatabase.execSQL(query);
+    // Method to create "myday_table"
+    public void create_myDay_table(SQLiteDatabase sqLiteDatabase) {
+        String query = "CREATE TABLE IF NOT EXISTS " + myday_table + " ("
+                + column_id + " INTEGER PRIMARY KEY AUTOINCREMENT, "
+                + column_task + " TEXT)";
+        sqLiteDatabase.execSQL(query);
+    }
 
+    // Method to create "task_table"
+    public void create_task_table(SQLiteDatabase sqLiteDatabase) {
+        String query = "CREATE TABLE IF NOT EXISTS " + task_table + " ("
+                + column_id + " INTEGER PRIMARY KEY AUTOINCREMENT, "  // Added missing space
+                + column_task + " TEXT)";                             // Added missing space
+        sqLiteDatabase.execSQL(query);
     }
 }
