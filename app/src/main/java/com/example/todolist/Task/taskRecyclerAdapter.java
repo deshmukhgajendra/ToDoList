@@ -24,6 +24,7 @@ public class taskRecyclerAdapter extends RecyclerView.Adapter<taskRecyclerAdapte
     public taskRecyclerAdapter(List<taskModel> taskList, Context context){
         this.taskList=taskList;
         this.context=context;
+        dbhelper= new Database(context);
     }
 
     @NonNull

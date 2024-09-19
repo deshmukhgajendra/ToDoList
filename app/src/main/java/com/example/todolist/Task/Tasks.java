@@ -1,6 +1,7 @@
 package com.example.todolist.Task;
 
 import android.content.ContentValues;
+import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
@@ -18,9 +19,11 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.todolist.Database;
+import com.example.todolist.MainActivity;
 import com.example.todolist.R;
 import com.example.todolist.MyDay.model;
 import com.example.todolist.MyDay.mydayRecyclerAdapter;
+import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.radiobutton.MaterialRadioButton;
@@ -35,6 +38,7 @@ public class Tasks extends AppCompatActivity {
     String task;
     RecyclerView recyclerView;
     List<taskModel>tasklist= new ArrayList<>();
+    MaterialToolbar tasksToolBar;
 
 
     @Override
@@ -54,6 +58,16 @@ public class Tasks extends AppCompatActivity {
         recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         dbHelper= new Database(this);
+        tasksToolBar= findViewById(R.id.tasksToolBar);
+        setSupportActionBar(tasksToolBar);
+
+
+            tasksToolBar.setNavigationOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                onBackPressed();
+            }
+        });
         fetchData();
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -105,5 +119,11 @@ public class Tasks extends AppCompatActivity {
         }cursor.close();
 
         adapter.notifyDataSetChanged();
+    }
+    public void onBackPressed() {
+
+        super.onBackPressed();
+        Intent i = new Intent(Tasks.this, MainActivity.class);
+        startActivity(i);
     }
 }

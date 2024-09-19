@@ -1,6 +1,7 @@
 package com.example.todolist.MyDay;
 
 import android.content.ContentValues;
+import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
@@ -16,15 +17,24 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.work.ExistingPeriodicWorkPolicy;
+import androidx.work.PeriodicWorkRequest;
+import androidx.work.WorkManager;
 
 import com.example.todolist.Database;
+import com.example.todolist.DatabaseResetWorker;
+import com.example.todolist.MainActivity;
 import com.example.todolist.R;
+import com.google.android.gms.dynamic.IFragmentWrapper;
+import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.radiobutton.MaterialRadioButton;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 public class MyDay extends AppCompatActivity {
 
@@ -34,7 +44,7 @@ public class MyDay extends AppCompatActivity {
     private List<model> taskList;
     mydayRecyclerAdapter adapter;
     RecyclerView recyclerView;
-
+    MaterialToolbar mydayToolBar;
 
 
     @Override
@@ -55,13 +65,17 @@ public class MyDay extends AppCompatActivity {
         recyclerView=findViewById(R.id.recyclerView);
         recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        mydayToolBar=findViewById(R.id.mydayToolBar);
         fetchData();
 
-//        LayoutInflater inflater=getLayoutInflater();
-//        View view= inflater.inflate(R.layout.bottonsheetlayout,null,false);
-//        RadioButton taskButton = view .findViewById(R.id.tasksButton);
-//        Button addButton= view .findViewById(R.id.addButton);
+        mydayToolBar.setNavigationOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                onBackPressed();
+            }
+        });
 
+        
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -93,6 +107,7 @@ public class MyDay extends AppCompatActivity {
                 });
             }
         });
+        scheduleDailyDatabaseReset();
     }
 
     public void insertTask(String task){
@@ -117,5 +132,31 @@ public class MyDay extends AppCompatActivity {
         cursor.close();
 
         adapter.notifyDataSetChanged();
+    }
+    public void onBackPressed() {
+
+        super.onBackPressed();
+
+        Intent i = new Intent(MyDay.this,MainActivity.class);
+        startActivity(i);
+    }
+    public void scheduleDailyDatabaseReset(){
+        Calendar currentTime= Calendar.getInstance();
+        Calendar targetTime = Calendar.getInstance();
+        targetTime.set(Calendar.HOUR_OF_DAY,0);
+        targetTime.set(Calendar.MINUTE,0);
+        targetTime.set(Calendar.SECOND,0);
+
+        if (targetTime.before(currentTime)){
+            targetTime.add(Calendar.DAY_OF_MONTH,1);
+        }
+
+        long initialDelay= targetTime.getTimeInMillis() - currentTime.getTimeInMillis();
+
+        PeriodicWorkRequest dailyWorkRequest= new PeriodicWorkRequest.Builder(DatabaseResetWorker.class,1, TimeUnit.DAYS)
+                .setInitialDelay(initialDelay,TimeUnit.MILLISECONDS)
+                .build();
+
+        WorkManager.getInstance(this).enqueueUniquePeriodicWork("DailyDatabaseReset", ExistingPeriodicWorkPolicy.REPLACE,dailyWorkRequest);
     }
 }
