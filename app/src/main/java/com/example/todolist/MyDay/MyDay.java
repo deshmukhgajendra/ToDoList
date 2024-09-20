@@ -1,6 +1,9 @@
 package com.example.todolist.MyDay;
 
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -108,6 +111,7 @@ public class MyDay extends AppCompatActivity {
             }
         });
         scheduleDailyDatabaseReset();
+        scheduleNotification(getApplicationContext());
     }
 
     public void insertTask(String task){
@@ -159,4 +163,30 @@ public class MyDay extends AppCompatActivity {
 
         WorkManager.getInstance(this).enqueueUniquePeriodicWork("DailyDatabaseReset", ExistingPeriodicWorkPolicy.REPLACE,dailyWorkRequest);
     }
-}
+
+    public void scheduleNotification(Context context){
+
+        AlarmManager alarmManager=  (AlarmManager)context.getSystemService(Context.ALARM_SERVICE);
+        int []hours = {20,21,22,23};
+        int[] minuts = {00,00,00,30};
+
+        for (int i = 0;i<hours.length;i++){
+            Calendar calendar= Calendar.getInstance();
+            calendar.set(Calendar.HOUR_OF_DAY,hours[i]);
+            calendar.set(Calendar.MINUTE,minuts[i]);
+            calendar.set(Calendar.SECOND,0);
+
+            if (calendar.getTimeInMillis() < System.currentTimeMillis()){
+                calendar.add(Calendar.DAY_OF_YEAR,1);
+            }
+
+            Intent intent = new Intent(context, NotificationReceiver.class);
+            PendingIntent pendingIntent = PendingIntent.getBroadcast(context, i, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+
+            // Set the alarm
+            alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), pendingIntent);
+        }
+        }
+
+
+    }

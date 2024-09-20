@@ -22,8 +22,9 @@ public class Database extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase sqLiteDatabase) {
-        create_myDay_table(sqLiteDatabase);   // Create "myday_table"
-        create_task_table(sqLiteDatabase);    // Create "task_table"
+        create_myDay_table(sqLiteDatabase);
+        create_task_table(sqLiteDatabase);
+        create_list_master(sqLiteDatabase);
     }
 
     @Override
@@ -31,6 +32,7 @@ public class Database extends SQLiteOpenHelper {
         // Drop older tables if they exist and recreate them
         sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + myday_table);
         sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + task_table);
+        sqLiteDatabase.execSQL("DROP TABLE IF EXISTS list_master");
         onCreate(sqLiteDatabase);
     }
 
@@ -54,8 +56,21 @@ public class Database extends SQLiteOpenHelper {
     // Method to create "task_table"
     public void create_task_table(SQLiteDatabase sqLiteDatabase) {
         String query = "CREATE TABLE IF NOT EXISTS " + task_table + " ("
-                + column_id + " INTEGER PRIMARY KEY AUTOINCREMENT, "  // Added missing space
-                + column_task + " TEXT)";                             // Added missing space
+                + column_id + " INTEGER PRIMARY KEY AUTOINCREMENT, "
+                + column_task + " TEXT)";
         sqLiteDatabase.execSQL(query);
+    }
+    public void create_list_master(SQLiteDatabase sqLiteDatabase){
+        String query = " CREATE TABLE IF NOT EXISTS list_master (" +
+                "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                "list_name TEXT UNIQUE)";
+        sqLiteDatabase.execSQL(query);
+    }
+    public void create_list_table(String tableName ,SQLiteDatabase sqLiteDatabase){
+        String query = "CREATE TABLE IF NOT EXISTS " + tableName + " ("
+                + column_id + " INTEGER PRIMARY KEY AUTOINCREMENT, "
+                +column_task + " TEXT) ";
+        sqLiteDatabase.execSQL(query);
+
     }
 }
