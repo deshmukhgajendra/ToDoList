@@ -9,7 +9,7 @@ import androidx.annotation.Nullable;
 
 public class Database extends SQLiteOpenHelper {
 
-    public static int version = 2;
+    public static int version = 3;
     public static String db_name = "db";
     public static String myday_table = "myday_table";  // Table for "My Day" tasks
     public static String task_table = "task_table";   // Table for general tasks
@@ -60,8 +60,8 @@ public class Database extends SQLiteOpenHelper {
                 + column_task + " TEXT)";
         sqLiteDatabase.execSQL(query);
     }
-    public void create_list_master(SQLiteDatabase sqLiteDatabase){
-        String query = " CREATE TABLE IF NOT EXISTS list_master (" +
+    public void create_list_master(SQLiteDatabase sqLiteDatabase) {
+        String query = "CREATE TABLE IF NOT EXISTS list_master (" +
                 "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 "list_name TEXT UNIQUE)";
         sqLiteDatabase.execSQL(query);
