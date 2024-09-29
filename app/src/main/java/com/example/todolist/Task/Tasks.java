@@ -125,5 +125,6 @@ public class Tasks extends AppCompatActivity {
         super.onBackPressed();
         Intent i = new Intent(Tasks.this, MainActivity.class);
         startActivity(i);
+        finish();
     }
 }

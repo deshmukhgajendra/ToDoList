@@ -12,14 +12,16 @@
         android:textSize="18sp"
         android:textStyle="bold"
         android:layout_gravity="center"
-        android:paddingBottom="8dp" />
+        android:paddingBottom="16dp" />
 
     <GridView
         android:id="@+id/emojiGrid"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:numColumns="4"
-        android:verticalSpacing="8dp"
-        android:horizontalSpacing="8dp"
-        android:stretchMode="columnWidth" />
+        android:verticalSpacing="24dp"
+        android:horizontalSpacing="24dp"
+        android:stretchMode="columnWidth"
+        android:gravity="center"/>
 </LinearLayout>
+

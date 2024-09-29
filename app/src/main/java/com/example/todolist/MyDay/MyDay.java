@@ -143,6 +143,7 @@ public class MyDay extends AppCompatActivity {
 
         Intent i = new Intent(MyDay.this,MainActivity.class);
         startActivity(i);
+        finish();
     }
     public void scheduleDailyDatabaseReset(){
         Calendar currentTime= Calendar.getInstance();

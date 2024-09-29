@@ -6,13 +6,17 @@ import static android.content.ContentValues.TAG;
 
 import android.app.Dialog;
 import android.content.ContentValues;
+import android.content.Intent;
+import android.content.res.ColorStateList;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.GridView;
 import android.widget.ImageButton;
@@ -22,6 +26,9 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.todolist.List.TextDrawable;
+import com.example.todolist.MyDay.MyDay;
+import com.example.todolist.Planned.Planned;
+import com.example.todolist.Task.Tasks;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.bottomappbar.BottomAppBar;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
@@ -29,6 +36,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
 import java.util.List;
+
 
 public class MainActivity extends AppCompatActivity {
 
@@ -40,6 +48,10 @@ public class MainActivity extends AppCompatActivity {
     RecyclerView recyclerView;
     ListAdapter listAdapter;
     List<String> listNames;
+    String selectedEmoji;
+    Button mydayButton,plannedButton,taskButton;
+    String selectedColor;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,6 +63,9 @@ public class MainActivity extends AppCompatActivity {
         fab = findViewById(R.id.fab);
         dbHelper = new Database(this);
         recyclerView = findViewById(R.id.recyclerView);
+        mydayButton=findViewById(R.id.mydayButton);
+        plannedButton=findViewById(R.id.plannedButton);
+        taskButton=findViewById(R.id.tasksButton);
 
         // Initialize list and adapter
 
@@ -58,14 +73,36 @@ public class MainActivity extends AppCompatActivity {
         listAdapter = new ListAdapter(listNames, this);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(listAdapter);
+        listAdapter.notifyDataSetChanged();
 
-        // Set up FAB click listener for creating new lists
+       mydayButton.setOnClickListener(new View.OnClickListener() {
+           @Override
+           public void onClick(View view) {
+               Intent i = new Intent(MainActivity.this, MyDay.class);
+               startActivity(i);
+           }
+       });
+       plannedButton.setOnClickListener(new View.OnClickListener() {
+           @Override
+           public void onClick(View view) {
+               Intent i = new Intent(MainActivity.this, Planned.class);
+               startActivity(i);
+           }
+       });
+       taskButton.setOnClickListener(new View.OnClickListener() {
+           @Override
+           public void onClick(View view) {
+               Intent i = new Intent(MainActivity.this, Tasks.class);
+               startActivity(i);
+           }
+       });
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 ListDialogBox();
             }
         });
+        dbHelper.create_list_master();
 
         // Fetch existing lists
         fetchList();
@@ -98,14 +135,16 @@ public class MainActivity extends AppCompatActivity {
         Dialog emojiDialog = new Dialog(this);
         emojiDialog.setContentView(R.layout.emoji_picker_dialog);
 
-        GridView emojiGrid = emojiDialog.findViewById(R.id.emojiGrid);
-        String[] emojis = new String[]{"😀", "😁", "😂", "🚀", "❤️", "😒", "🥺", "😘"};
+        emojiDialog.getWindow().setLayout(800, 800);
 
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, emojis);
+        GridView emojiGrid = emojiDialog.findViewById(R.id.emojiGrid);
+        String[] emojis = new String[]{"🌍","💵","🌻","🏘️","🎵","📅","😂", "🚀", "❤️", "😒", "🥺", "🏢","🧑‍❤️‍👩","🙏","💃","🎂","🙇"};
+
+        EmojiAdapter adapter = new EmojiAdapter(this, emojis);
         emojiGrid.setAdapter(adapter);
 
         emojiGrid.setOnItemClickListener((parent, view, position, id) -> {
-            String selectedEmoji = emojis[position];
+            selectedEmoji = emojis[position];
             emojiButton.setImageDrawable(new TextDrawable(selectedEmoji));
             emojiDialog.dismiss();
         });
@@ -116,11 +155,19 @@ public class MainActivity extends AppCompatActivity {
     // Method to create a new list
     private void createdNewList(String listName) {
         SQLiteDatabase sqLiteDatabase = dbHelper.getWritableDatabase();
-        dbHelper.create_list_table(listName, sqLiteDatabase);  // Create the list table
 
-        // Insert the list name into list_master
+        // Append the selected emoji to the list name for display purposes
+        String listNameWithEmoji = selectedEmoji + " " + listName;
+
+        // Sanitize the table name (remove the emoji)
+        String sanitizedListName = listName.replaceAll("[^a-zA-Z0-9_]", "");  // Allow only alphanumeric characters and underscores
+
+        // Create the list table with the sanitized name
+        dbHelper.create_list_table(sanitizedListName, sqLiteDatabase);
+
+        // Insert the list name with emoji into list_master for display purposes
         ContentValues values = new ContentValues();
-        values.put("list_name", listName);
+        values.put("list_name", listNameWithEmoji);  // Save the list name with the emoji for user display
         sqLiteDatabase.insert("list_master", null, values);
 
         // Refresh the list of lists

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/renamelistButton"
+        android:icon="@drawable/rename"
+        android:title="Rename List"
+        android:contentDescription="rename"
+        app:showAsAction="never"/>
+    <item
+        android:id="@+id/changeThemeButton"
+        android:icon="@drawable/changetheme"
+        android:contentDescription="theme"
+        android:title="Change Theme"
+        app:showAsAction="never"/>
+    <item
+        android:id="@+id/printlistButton"
+        android:icon="@drawable/changetheme"
+        android:contentDescription="print"
+        android:title="Print List"
+        app:showAsAction="never"/>
+    <item
+        android:id="@+id/deletelistButton"
+        android:icon="@drawable/delete"
+        android:contentDescription="delete"
+        android:title="Delete List"
+        app:showAsAction="never"/>
+
+</menu>

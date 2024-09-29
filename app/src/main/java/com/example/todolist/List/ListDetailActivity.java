@@ -1,5 +1,7 @@
 package com.example.todolist.List;
 
+import static android.content.ContentValues.TAG;
+
 import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
@@ -7,11 +9,15 @@ import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.ImageButton;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -25,6 +31,7 @@ import com.example.todolist.R;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
@@ -40,6 +47,9 @@ public class ListDetailActivity extends AppCompatActivity {
     ListViewRecyclerAdapter adapter;
     FloatingActionButton fabButton;
     MaterialToolbar listToolBar;
+    ListAdapter listAdapter;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -60,15 +70,47 @@ public class ListDetailActivity extends AppCompatActivity {
         fabButton = findViewById(R.id.fabButton);
         listToolBar= findViewById(R.id.listToolBar);
 
+
+        setSupportActionBar(listToolBar);
         listToolBar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Intent i = new Intent(ListDetailActivity.this, MainActivity.class);
                 startActivity(i);
+                finish();
             }
         });
 
-       // listName = getIntent().getStringExtra("LIST_NAME");
+
+        listToolBar.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                int itemId = item.getItemId();
+
+                if (itemId == R.id.renamelistButton) {
+                    // Handle rename list action
+                    renamelist();
+                    return true;
+                } else if (itemId == R.id.changeThemeButton) {
+                    // Handle change theme action
+                    return true;
+                } else if (itemId == R.id.printlistButton) {
+                    // Handle print list action
+                    return true;
+                } else if (itemId == R.id.deletelistButton) {
+                    String tableName= listName.replaceAll("[^a-zA-Z0-9_]", "_");
+                    dbHelper.delete_list_table(tableName);
+                    dbHelper.delete_list_master_row(listName);
+                    Intent i = new Intent(ListDetailActivity.this, MainActivity.class);
+                    startActivity(i);
+
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+        });
+
         fabButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -91,18 +133,36 @@ public class ListDetailActivity extends AppCompatActivity {
         listToolBar.setTitle(listName);
 
     }
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.top_app_bar_menu, menu);
+        return true;
+    }
+
+
+
 
     private void fetchData() {
         listNames.clear();
         SQLiteDatabase db = dbHelper.getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT task FROM " + listName, null); // Use listName
-        if (cursor.moveToFirst()) {
-            do {
-                String name=cursor.getString(cursor.getColumnIndex(Database.column_task));
-                listNames.add(new ListModel(name));
-            } while (cursor.moveToNext());
+
+        // Sanitize listName before using it
+        String sanitizedListName = listName.replaceAll("[^a-zA-Z0-9_]", "");  // Simple example: Replace special characters with '_'
+
+        try {
+            Cursor cursor = db.rawQuery("SELECT task FROM " + sanitizedListName, null);
+            if (cursor.moveToFirst()) {
+                do {
+                    String name = cursor.getString(cursor.getColumnIndexOrThrow(Database.column_task));
+                    listNames.add(new ListModel(name));
+                } while (cursor.moveToNext());
+            }
+            cursor.close();
+        } catch (Exception e) {
+            Log.e("ListDetailActivity", "Error fetching data from table: " + sanitizedListName, e);
+            // Optionally show a message to the user if the table doesn't exist
         }
-        cursor.close();
+
         adapter.notifyDataSetChanged();
     }
 
@@ -129,10 +189,40 @@ public class ListDetailActivity extends AppCompatActivity {
         });
     }
 
-    public void insertDataInList(){
-        SQLiteDatabase sqLiteDatabase= dbHelper.getWritableDatabase();
-        ContentValues values= new ContentValues();
-        values.put("task",taskName);
-        sqLiteDatabase.insert(listName,null,values);
+    public void insertDataInList() {
+        SQLiteDatabase sqLiteDatabase = dbHelper.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put("task", taskName);
+
+        // Sanitize listName before using it
+        String sanitizedListName = listName.replaceAll("[^a-zA-Z0-9_]", "");
+
+        try {
+            sqLiteDatabase.insert(sanitizedListName, null, values);
+        } catch (Exception e) {
+            Log.e("ListDetailActivity", "Error inserting data into table: " + sanitizedListName, e);
+            // Optionally handle insertion error
+        }
     }
+    public void renamelist(){
+        LayoutInflater inflater=getLayoutInflater();
+        View view=inflater.inflate(R.layout.listdialogbox,null);
+        ImageButton emojiButton = view.findViewById(R.id.emojiButton);
+        EditText nameInput = view.findViewById(R.id.nameInput);
+        nameInput.setHint(listName);
+
+        new MaterialAlertDialogBuilder(this)
+                .setTitle("Rename List")
+                .setView(view)
+                .setPositiveButton("Rename", (dialog, which) -> {
+                    // add rename logic here
+                    String newTableName=nameInput.getText().toString();
+                    String oldTablename=listName.replaceAll("[^a-zA-Z0-9_]", "");
+                    dbHelper.renameList(oldTablename,newTableName,listName,newTableName);
+
+                })
+                .setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss())
+                .show();
+    }
+
 }

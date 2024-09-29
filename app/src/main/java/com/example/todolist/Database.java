@@ -2,8 +2,10 @@ package com.example.todolist;
 
 import android.content.Context;
 import android.database.Cursor;
+import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
 
 import androidx.annotation.Nullable;
 
@@ -24,7 +26,7 @@ public class Database extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase sqLiteDatabase) {
         create_myDay_table(sqLiteDatabase);
         create_task_table(sqLiteDatabase);
-        create_list_master(sqLiteDatabase);
+        create_list_master();
     }
 
     @Override
@@ -60,7 +62,8 @@ public class Database extends SQLiteOpenHelper {
                 + column_task + " TEXT)";
         sqLiteDatabase.execSQL(query);
     }
-    public void create_list_master(SQLiteDatabase sqLiteDatabase) {
+    public void create_list_master() {
+        SQLiteDatabase sqLiteDatabase= getWritableDatabase();
         String query = "CREATE TABLE IF NOT EXISTS list_master (" +
                 "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 "list_name TEXT UNIQUE)";
@@ -72,5 +75,39 @@ public class Database extends SQLiteOpenHelper {
                 +column_task + " TEXT) ";
         sqLiteDatabase.execSQL(query);
 
+    }
+
+    public void delete_list_master_row(String listRow){
+        SQLiteDatabase db= getWritableDatabase();
+        db.delete("list_master","list_name = ?", new String[]{listRow});
+        db.close();
+    }
+    public void delete_list_table(String tableName){
+
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        try {
+            db.execSQL("DROP TABLE IF EXISTS " + tableName);
+            Log.d("Database", "Table " + tableName + " deleted successfully");
+        } catch (Exception e) {
+            Log.e("Database", "Error deleting table: " + tableName, e);
+        } finally {
+            db.close();
+        }
+    }
+
+    public void renameList(String oldTableName,String newTableName,String newValue,String oldValue){
+        SQLiteDatabase db= getWritableDatabase();
+
+        try {
+            String renameQuery= "ALTER TABLE " + oldTableName + " RENAME TO " + newTableName;
+            db.execSQL(renameQuery);
+            String updateListMasterQuery = "UPDATE list_master SET list_name = ? WHERE list_name = ?";
+            db.execSQL(updateListMasterQuery,new Object[]{newValue, oldValue});
+
+
+        }catch (SQLException e){
+            Log.e("DB_ERROR", "Error updating list_master: " + e.getMessage());
+        }
     }
 }
