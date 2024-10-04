@@ -4,6 +4,7 @@ import static android.service.controls.ControlsProviderService.TAG;
 
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.telephony.PhoneNumberFormattingTextWatcher;
 import android.text.Editable;
@@ -50,10 +51,15 @@ public class Signup extends AppCompatActivity {
     TextInputEditText emailEditText, passwordEditText, nameEditText, mobilenoEditText;
     MaterialButton googleSignUpButton, signUpButton, mobileSignUpButton, loginIntentButton;
 
-    private GoogleSignInClient mGoogleSignInCLient;
+    //GoogleSignInClient mGoogleSignInCLient;
     FirebaseAuth mAuth;
     private static final int RC_SIGN_IN = 9001;
     String verificationId;
+    GoogleSignInClient mGoogleSignInClient;
+
+   public String name,email;
+   public Uri photoUri;
+
 
     public void onStart(){
         super.onStart();
@@ -92,6 +98,12 @@ public class Signup extends AppCompatActivity {
             Intent i = new Intent(Signup.this, Login.class);
             startActivity(i);
         });
+        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestIdToken(getString(R.string.default_web_client_id)) // replace with your actual web client ID
+                .requestEmail()
+                .build();
+
+        mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
 
         googleSignUpButton.setOnClickListener(view -> signIn());
 
@@ -143,7 +155,7 @@ public class Signup extends AppCompatActivity {
 
 
     public void signIn() {
-        Intent signInIntent = mGoogleSignInCLient.getSignInIntent();
+        Intent signInIntent = mGoogleSignInClient.getSignInIntent();
         startActivityForResult(signInIntent, RC_SIGN_IN);
     }
 
@@ -153,6 +165,7 @@ public class Signup extends AppCompatActivity {
 
         if (requestCode == RC_SIGN_IN) {
             Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
+            handleSignInResult(task);
             try {
 
                 GoogleSignInAccount account = task.getResult(ApiException.class);
@@ -181,6 +194,26 @@ public class Signup extends AppCompatActivity {
                             }
                         }
                 );
+    }
+
+    private void handleSignInResult(Task<GoogleSignInAccount> completedTask){
+        try {
+            GoogleSignInAccount account= completedTask.getResult(ApiException.class);
+            if (account != null){
+                 name = account.getDisplayName();
+                 email = account.getEmail();
+                 photoUri = account.getPhotoUrl();
+
+                String photoUrl = (photoUri != null) ? photoUri.toString() : null;
+
+                Log.d("Google Sign-In", "Name: " + name);
+                Log.d("Google Sign-In", "Email: " + email);
+                Log.d("Google Sign-In", "Photo URL: " + photoUrl);
+            }
+
+        }catch (ApiException e){
+            Log.w("Google Sign-In", "signInResult:failed code=" + e.getStatusCode());
+        }
     }
 
 

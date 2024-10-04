@@ -3,4 +3,8 @@
     <string name="default_web_client_id">206176699928-ctek8osetc1dc2uuth4u7ffg7bspo8ot.apps.googleusercontent.com</string>
     <string name="email">Email</string>
     <string name="password">Password</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="header_title">gajendra</string>
+    <string name="header_text">gajendradeshmukh</string>
 </resources>
