@@ -235,6 +235,12 @@ public class MainActivity extends AppCompatActivity {
     private void createdNewList(String listName) {
         SQLiteDatabase sqLiteDatabase = dbHelper.getWritableDatabase();
 
+        // Check if an emoji has been selected
+        if (selectedEmoji == null || selectedEmoji.isEmpty()) {
+            // Set the default emoji drawable
+            selectedEmoji = "📃"; // Clear the previous text drawable if set
+        }
+
         // Append the selected emoji to the list name for display purposes
         String listNameWithEmoji = selectedEmoji + " " + listName;
 
@@ -249,7 +255,6 @@ public class MainActivity extends AppCompatActivity {
         values.put("list_name", listNameWithEmoji);  // Save the list name with the emoji for user display
         sqLiteDatabase.insert("list_master", null, values);
 
-        // Refresh the list of lists
         fetchList();
     }
 

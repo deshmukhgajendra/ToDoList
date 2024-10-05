@@ -3,7 +3,9 @@ package com.example.todolist.List;
 import static android.content.ContentValues.TAG;
 
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
@@ -18,6 +20,7 @@ import android.widget.ImageButton;
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.cardview.widget.CardView;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -98,7 +101,8 @@ public class ListDetailActivity extends AppCompatActivity {
                     // Handle print list action
                     return true;
                 } else if (itemId == R.id.deletelistButton) {
-                    String tableName= listName.replaceAll("[^a-zA-Z0-9_]", "_");
+                    String tableName= listName.replaceAll("[^a-zA-Z0-9_]", "");
+                    Log.d(TAG, "onMenuItemClick: "+ tableName);
                     dbHelper.delete_list_table(tableName);
                     dbHelper.delete_list_master_row(listName);
                     Intent i = new Intent(ListDetailActivity.this, MainActivity.class);
